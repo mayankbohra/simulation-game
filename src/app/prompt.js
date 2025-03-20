@@ -61,6 +61,11 @@ WHAT WOULD YOU LIKE TO DO NEXT?
 [Button:View Suspect (name of suspect) Statement]
 [Button:Make an Arrest]
 [Button:View SVA Reference]
+
+Presentation format for the suspect statements:
+[Suspect 1 Statement]
+[Suspect 2 Statement]
+[Suspect 3 Statement]
 </PRESENTATION_FORMAT>
 
 <INVESTIGATION_METER>

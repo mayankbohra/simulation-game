@@ -47,6 +47,7 @@ export async function POST(request) {
         });
 
         const responseText = completion.content[0].text;
+        console.log("Response Text: ", responseText);
 
         return new Response(JSON.stringify({ response: responseText }), {
             status: 200,
