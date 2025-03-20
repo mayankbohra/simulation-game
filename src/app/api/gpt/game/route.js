@@ -66,22 +66,30 @@ export async function POST(request) {
         });
 
         // Differentiate between different types of errors
-        if (error.name === 'APIConnectionError') {
-            return new Response(JSON.stringify({
+        let status = 500;
+        let errorResponse = {
+            error: 'Unexpected Error',
+            details: error.message || 'An unexpected error occurred while processing your request'
+        };
+
+        if (error.name === 'APIConnectionError' || error.name === 'ConnectionError' || error.name === 'FetchError') {
+            status = 503;
+            errorResponse = {
                 error: 'Network Error',
                 details: 'Unable to connect to the AI service. Please check your internet connection.'
-            }), {
-                status: 503, // Service Unavailable
-                headers: { 'Content-Type': 'application/json' },
-            });
+            };
         } else if (error.name === 'AuthenticationError') {
-            return new Response(JSON.stringify({
+            status = 401;
+            errorResponse = {
                 error: 'Authentication Failed',
                 details: 'Invalid or expired API credentials'
-            }), {
-                status: 401, // Unauthorized
-                headers: { 'Content-Type': 'application/json' },
-            });
+            };
+        } else if (error.name === 'TimeoutError' || error.message?.includes('timeout')) {
+            status = 504;
+            errorResponse = {
+                error: 'Request Timeout',
+                details: 'The AI service took too long to respond. Please try again.'
+            };
         }
 
         // Generic error response

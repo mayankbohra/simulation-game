@@ -71,7 +71,7 @@ export async function POST(request) {
             details: error.message || 'An unexpected error occurred while processing your request'
         };
 
-        if (error.name === 'APIConnectionError') {
+        if (error.name === 'APIConnectionError' || error.name === 'ConnectionError' || error.name === 'FetchError') {
             status = 503;
             errorResponse = {
                 error: 'Network Error',
@@ -82,6 +82,12 @@ export async function POST(request) {
             errorResponse = {
                 error: 'Authentication Failed',
                 details: 'Invalid or expired API credentials'
+            };
+        } else if (error.name === 'TimeoutError' || error.message?.includes('timeout')) {
+            status = 504;
+            errorResponse = {
+                error: 'Request Timeout',
+                details: 'The AI service took too long to respond. Please try again.'
             };
         }
 

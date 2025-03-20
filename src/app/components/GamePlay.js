@@ -136,10 +136,23 @@ export default function GamePlay({ router }) {
                     { role: 'user', content: 'Start a new murder mystery case' },
                     { role: 'assistant', content: data.response }
                 ]);
+            } else if (data.error) {
+                // Handle error response from API
+                throw new Error(data.details || data.error);
             }
         } catch (error) {
             console.error('Error starting game:', error);
-            setMessages([{ role: 'system', content: 'Failed to start the game. Please try again.' }]);
+
+            // Generate a user-friendly error message
+            let errorMessage = 'Failed to start the game. Please try again.';
+
+            if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+                errorMessage = 'The server took too long to respond. Please try again.';
+            } else if (error.message?.includes('502') || error.message?.includes('Bad Gateway')) {
+                errorMessage = 'Server communication error (502). This is likely a temporary issue with the deployed environment.';
+            }
+
+            setMessages([{ role: 'system', content: errorMessage }]);
         } finally {
             setLoading(false);
         }
@@ -194,7 +207,7 @@ export default function GamePlay({ router }) {
             }
 
             const data = await response.json();
-            console.log("SEND MESSAGE: ", data);
+            console.log("SEND MESSAGE RESPONSE: ", data);
 
             if (data.response) {
                 const meterValue = extractMeterValue(data.response);
@@ -205,12 +218,25 @@ export default function GamePlay({ router }) {
                 setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
                 updatedHistory.push({ role: 'assistant', content: data.response });
                 setHistory(updatedHistory);
+            } else if (data.error) {
+                // Handle error response from API
+                throw new Error(data.details || data.error);
             }
         } catch (error) {
             console.error('Error sending message:', error);
+
+            // Generate a fallback response for better user experience
+            let errorMessage = 'Failed to get a response. Please try again.';
+
+            if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+                errorMessage = 'The request timed out. The server might be busy. Please try again.';
+            } else if (error.message?.includes('502') || error.message?.includes('Bad Gateway')) {
+                errorMessage = 'Server communication error (502). This is likely a temporary issue with the deployed environment.';
+            }
+
             setMessages(prev => [...prev, {
                 role: 'system',
-                content: 'Failed to get a response. Please try again.'
+                content: errorMessage
             }]);
         } finally {
             setLoading(false);
@@ -219,7 +245,6 @@ export default function GamePlay({ router }) {
 
     const handleButtonAction = async (action) => {
         if (loading) return;
-        
 
         setLoading(true);
         setMessages(prev => [...prev, { role: 'user', content: action }]);
@@ -249,7 +274,7 @@ export default function GamePlay({ router }) {
 
             // Attempt to parse the response as JSON
             const data = await response.json();
-            console.log("BUTTON ACTION: ", data);
+            console.log("BUTTON ACTION RESPONSE: ", data);
 
             if (data.response) {
                 const meterValue = extractMeterValue(data.response);
@@ -261,22 +286,26 @@ export default function GamePlay({ router }) {
                 setMessages(prev => [...prev, { role: 'assistant', content: finalContent }]);
                 updatedHistory.push({ role: 'assistant', content: finalContent });
                 setHistory(updatedHistory);
+            } else if (data.error) {
+                // Handle error response from API
+                throw new Error(data.details || data.error);
             }
         } catch (error) {
             console.error('Error sending message:', error);
 
-            // Check if the error is due to invalid JSON
-            if (error.name === 'SyntaxError') {
-                setMessages(prev => [...prev, {
-                    role: 'system',
-                    content: 'Received an invalid response from the server. Please try again.'
-                }]);
-            } else {
-                setMessages(prev => [...prev, {
-                    role: 'system',
-                    content: 'Failed to get a response. Please try again.'
-                }]);
+            // Generate a fallback response for better user experience
+            let errorMessage = 'Failed to get a response. Please try again.';
+
+            if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+                errorMessage = 'The request timed out. The server might be busy. Please try again.';
+            } else if (error.message?.includes('502') || error.message?.includes('Bad Gateway')) {
+                errorMessage = 'Server communication error (502). This is likely a temporary issue with the deployed environment.';
             }
+
+            setMessages(prev => [...prev, {
+                role: 'system',
+                content: errorMessage
+            }]);
         } finally {
             setLoading(false);
         }
