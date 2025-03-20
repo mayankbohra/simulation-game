@@ -36,7 +36,7 @@ export async function POST(request) {
 
         // Call Anthropic API with system as a top-level parameter
         const completion = await anthropic.messages.create({
-            model: 'claude-3-7-sonnet-20250219',
+            model: 'claude-3-5-sonnet-20240620',
             system: MURDER_MYSTERY_PROMPT,
             messages: [
                 ...filteredHistory,
@@ -47,7 +47,6 @@ export async function POST(request) {
         });
 
         const responseText = completion.content[0].text;
-        console.log("Response Text: ", responseText);
 
         return new Response(JSON.stringify({ response: responseText }), {
             status: 200,
