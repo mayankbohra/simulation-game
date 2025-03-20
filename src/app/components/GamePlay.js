@@ -112,7 +112,7 @@ export default function GamePlay({ router }) {
         setTimerActive(true);
 
         try {
-            const response = await fetch('/api/gpt/game', {
+            const response = await fetch('/api/claude/game', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: 'Start a new murder mystery case', history: [] }),
@@ -180,7 +180,7 @@ export default function GamePlay({ router }) {
         const updatedHistory = [...history, { role: 'user', content: userMessage }];
 
         try {
-            const response = await fetch('/api/gpt/game', {
+            const response = await fetch('/api/claude/game', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -227,7 +227,7 @@ export default function GamePlay({ router }) {
         try {
             const messageToSend = action;
 
-            const response = await fetch('/api/gpt/game', {
+            const response = await fetch('/api/claude/game', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
