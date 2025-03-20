@@ -112,7 +112,7 @@ export default function GamePlay({ router }) {
         setTimerActive(true);
 
         try {
-            const response = await fetch('/api/claude/game', {
+            const response = await fetch('/api/gpt/game', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: 'Start a new murder mystery case', history: [] }),
@@ -180,69 +180,6 @@ export default function GamePlay({ router }) {
             .trim();
     };
 
-    const sendMessage = async (e) => {
-        e.preventDefault();
-
-        if (!userInput.trim() || loading) return;
-
-        const userMessage = userInput.trim();
-        setUserInput('');
-        setLoading(true);
-
-        setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
-        const updatedHistory = [...history, { role: 'user', content: userMessage }];
-
-        try {
-            const response = await fetch('/api/claude/game', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: userMessage,
-                    history: history
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            console.log("SEND MESSAGE RESPONSE: ", data);
-
-            if (data.response) {
-                const meterValue = extractMeterValue(data.response);
-                if (meterValue !== null) {
-                    setInvestigationProgress(meterValue);
-                }
-
-                setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
-                updatedHistory.push({ role: 'assistant', content: data.response });
-                setHistory(updatedHistory);
-            } else if (data.error) {
-                // Handle error response from API
-                throw new Error(data.details || data.error);
-            }
-        } catch (error) {
-            console.error('Error sending message:', error);
-
-            // Generate a fallback response for better user experience
-            let errorMessage = 'Failed to get a response. Please try again.';
-
-            if (error.name === 'AbortError' || error.name === 'TimeoutError') {
-                errorMessage = 'The request timed out. The server might be busy. Please try again.';
-            } else if (error.message?.includes('502') || error.message?.includes('Bad Gateway')) {
-                errorMessage = 'Server communication error (502). This is likely a temporary issue with the deployed environment.';
-            }
-
-            setMessages(prev => [...prev, {
-                role: 'system',
-                content: errorMessage
-            }]);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleButtonAction = async (action) => {
         if (loading) return;
 
@@ -258,7 +195,7 @@ export default function GamePlay({ router }) {
             console.log("Action: ", action);
             const messageToSend = action;
 
-            const response = await fetch('/api/claude/game', {
+            const response = await fetch('/api/gpt/game', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -339,26 +276,6 @@ export default function GamePlay({ router }) {
 
     const toggleEndCaseHistory = () => {
         setShowEndCaseHistory(prev => !prev);
-    };
-
-    const formatTime = (seconds) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    const getTimerClasses = () => {
-        let baseClasses = "font-mono text-base sm:text-xl font-bold rounded-md px-2 sm:px-3 py-1 transition-all ";
-
-        if (timeRemaining <= 60) {
-            return baseClasses + "bg-red-600 text-white animate-shake animate-urgent-pulse";
-        } else if (timeRemaining <= 180) {
-            return baseClasses + "bg-orange-500 text-white animate-heartbeat";
-        } else if (timeRemaining <= 300) {
-            return baseClasses + "bg-yellow-500 text-white animate-warning-glow";
-        } else {
-            return baseClasses + "bg-indigo-800/70 text-white";
-        }
     };
 
     const getFriendlyTimeMessage = (timestamp, index) => {
@@ -563,22 +480,6 @@ export default function GamePlay({ router }) {
                 {/* Show appropriate footer based on case status */}
                 {isCaseClosed ? renderCaseEndUI() : (
                     <div className="p-3 md:p-4 glass border-t">
-                        <form onSubmit={sendMessage} className="flex items-center gap-2">
-                            <input
-                                type="text"
-                                value={userInput}
-                                onChange={(e) => setUserInput(e.target.value)}
-                                placeholder="Ask a question or type your next move..."
-                                className="flex-1 p-2 rounded-md bg-slate-800/50 text-white border border-indigo-900/30 focus:outline-none focus:ring-2 focus:ring-indigo-600/50"
-                                disabled={loading}
-                            />
-                            <Button
-                                type="submit"
-                                text="Send"
-                                disabled={loading || !userInput.trim()}
-                                className="bg-indigo-600 hover:bg-indigo-700"
-                            />
-                        </form>
                         <div className="text-center mt-2">
                             {loading ? (
                                 <div className="flex items-center justify-center text-sm text-white/80">

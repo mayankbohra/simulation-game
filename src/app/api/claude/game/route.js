@@ -43,7 +43,7 @@ export async function POST(request) {
                 { role: 'user', content: message }
             ],
             temperature: 0.3,
-            max_tokens: 1500,
+            max_tokens: 2000,
         });
 
         const responseText = completion.content[0].text;
