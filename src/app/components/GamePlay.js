@@ -225,8 +225,11 @@ export default function GamePlay({ router }) {
         const updatedHistory = [...history, { role: 'user', content: action }];
 
         try {
-            console.log(typeof action);
-            console.log(action);
+            console.log("Types of History: ", typeof history);
+            console.log("History: ", history);
+
+            console.log("Type of action: ", typeof action);
+            console.log("Action: ", action);
             const messageToSend = action;
 
             const response = await fetch('/api/claude/game', {
