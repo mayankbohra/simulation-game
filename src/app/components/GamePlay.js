@@ -219,6 +219,7 @@ export default function GamePlay({ router }) {
 
     const handleButtonAction = async (action) => {
         if (loading) return;
+        
 
         setLoading(true);
         setMessages(prev => [...prev, { role: 'user', content: action }]);
